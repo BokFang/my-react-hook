@@ -24,11 +24,11 @@ function useEffect(callback, dependencies) {
       hookIndex++;
     } else {
       hookState[hookIndex++] = dependencies;
-      callback();
+      setTimeout(callback);
     };
   } else {
     hookState[hookIndex++] = dependencies;
-    callback();
+    setTimeout(callback);
   };
 };
 
@@ -39,9 +39,9 @@ function App() {
   function changeTitle () {
   document.title = num;
   console.log('changeTitle');
-  }
+  };
 
-  useEffect(() => {changeTitle()}, [num])
+useEffect(() => {changeTitle()}, [num]);
 
   return (
     <div>

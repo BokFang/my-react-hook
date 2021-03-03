@@ -1,17 +1,66 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+let hookState = [];
+let hookIndex = 0;
+function useState(initialState) {
+  hookState[hookIndex] = hookState[hookIndex] || initialState;
+  const currentIndex = hookIndex;
+  function setState(newState) {
+    hookState[currentIndex] = newState;
+    render();
+    hookIndex = 0;
+  }
+  return [hookState[hookIndex++], setState];
+}
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+function useEffect(callback, dependencies) {
+  if (hookState[hookIndex]) {
+    const lastDependencies = hookState[hookIndex];
+    const same = dependencies.every(
+      (item, index) => item === lastDependencies[index]
+    );
+    if (same) {
+      hookIndex++;
+    } else {
+      hookState[hookIndex++] = dependencies;
+      callback();
+    };
+  } else {
+    hookState[hookIndex++] = dependencies;
+    callback();
+  };
+};
+
+function App() {
+  const [num, setNum] = useState(0);
+  const [name, setName] = useState("Fang");
+
+  function changeTitle () {
+  document.title = num;
+  console.log('changeTitle');
+  }
+
+  useEffect(() => {changeTitle()}, [num])
+
+  return (
+    <div>
+      <p>number:{num}</p>
+      <p>name:{name}</p>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button
+        onClick={() => {
+          setNum(num + 1);
+        }}
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+function render() {
+  ReactDOM.render(<App />, document.getElementById("root"));
+}
+
+render();
